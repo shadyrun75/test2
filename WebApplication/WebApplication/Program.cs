@@ -16,6 +16,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+new WebApp.DBWorker(app.Configuration);
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

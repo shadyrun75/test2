@@ -1,0 +1,46 @@
+﻿@page "/fetchdata"
+@using ModelsLib;
+@using System.Net.Http.Headers
+@inject HttpClient Http
+
+<PageTitle>Main model list</PageTitle>
+
+<h1>Main model list</h1>
+
+@if (mainModels == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Code</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in mainModels)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Code</td>
+                    <td>@item.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    
+}
+
+@code {
+    private IEnumerable<DatabaseMainModel>? mainModels;
+
+    protected override async Task OnInitializedAsync()
+    {
+        mainModels = await Http.GetFromJsonAsync<DatabaseMainModel[]>("mainmodel");
+    }
+}

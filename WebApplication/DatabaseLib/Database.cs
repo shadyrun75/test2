@@ -75,7 +75,7 @@ namespace DatabaseLib
             }
         }
 
-        public IEnumerable<IDatabaseMainModel> Select(int? offset = 0, int? count = 0, int? code = null, string? value = null)
+        public IEnumerable<IDatabaseMainModel> Select(ref int totalcount, int? offset = 0, int? count = 0, int? code = null, string? value = null)
         {
             if (offset < 0)
                 throw new Exception("Смещение не может быть отрицательным");
@@ -97,12 +97,12 @@ namespace DatabaseLib
                 {
                     bool flagFetch = (count > 0);
 
-                    var commandText = "SELECT [id],[code],[value] FROM[testdb].[dbo].[MainModels] ";
-                    
+                    var selectData = "SELECT [id],[code],[value] FROM[testdb].[dbo].[MainModels] ";
+                    var selectCount = "SELECT count([id]) FROM[testdb].[dbo].[MainModels] ";
+                    string whereFilter = "";
                     // настройка SQL для фильтрации
                     if ((count != null) || (value != null))
-                    {
-                        string whereFilter = "";
+                    {                        
                         bool flagAnd = false;
                         if (value != null)
                         {
@@ -116,17 +116,26 @@ namespace DatabaseLib
                             whereFilter += $"[code] = @code ";
                         }
                         if (whereFilter != "")
-                            commandText += $"where {whereFilter}";
+                            whereFilter = $"where {whereFilter}";
                     }
 
-                    commandText += " order by [code] OFFSET @offset ROWS ";
-                    
+                    selectCount += whereFilter;
+                    selectData += whereFilter + " order by [code] OFFSET @offset ROWS ";
                     if (flagFetch)
-                        commandText += " fetch next @count rows only";
+                        selectData += " fetch next @count rows only";
                     
                     command.Connection = connection;
-                    command.CommandText = commandText;
-                    
+
+                    command.CommandText = selectCount;
+                    if (value != null)
+                        command.Parameters.AddWithValue("value", $"%{value}%");
+                    if (code != null)
+                        command.Parameters.AddWithValue("code", code);
+
+                    totalcount = Convert.ToInt32(command.ExecuteScalar());
+
+                    command.CommandText = selectData;
+                    command.Parameters.Clear();
                     command.Parameters.AddWithValue("offset", offset * count);
                     if (flagFetch)
                         command.Parameters.AddWithValue("count", count);
@@ -137,16 +146,19 @@ namespace DatabaseLib
 
                     using (var reader = command.ExecuteReader())
                     {
+                        List<IDatabaseMainModel> result = new List<IDatabaseMainModel>();
                         while (reader.Read())
                         {
                             var _id = reader.GetInt64(0);
                             var _code = reader.GetInt32(1);
                             var _value = reader.GetString(2);
-                            yield return new ModelsLib.DatabaseMainModel(_id, _code, _value);
+                            result.Add(new ModelsLib.DatabaseMainModel(_id, _code, _value));
                         }
+                        return result;
                     }
                 }
             }
+            return null;
         }
     }
 }

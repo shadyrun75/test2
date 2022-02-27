@@ -15,7 +15,7 @@
         /// <param name="code">Поле код для фильтрации</param>
         /// <param name="value">Поле значение для фильтрации</param>
         /// <returns>Массив данных</returns>
-        public IEnumerable<IDatabaseMainModel> Select(int? offset, int? count, int? code, string? value);
+        public IEnumerable<IDatabaseMainModel> Select(ref int totalcount, int? offset, int? count, int? code, string? value);
         /// <summary>
         /// Очистка данных в базе данных
         /// </summary>

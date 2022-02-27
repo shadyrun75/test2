@@ -1,0 +1,75 @@
+﻿@page "/insert"
+@using ModelsLib;
+@using Newtonsoft.Json;
+@inject HttpClient Http;
+@inject IJSRuntime JsRuntime;
+
+<PageTitle>Вставка данных</PageTitle>
+
+<EditForm Model="@currentModel" >
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputNumber id="newcode" @bind-Value="currentModel.Code" placeholder="Code"/>
+    <InputText id="newvalue" @bind-Value="currentModel.Value" placeholder="Value" ParsingErrorMessage="Поле не может быть пустым"/>
+    <button class="btn btn-primary" @onclick="Add">Добавить</button>
+</EditForm>
+
+<table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in data)
+            {
+                <tr>
+                    <td>@item.Code</td>
+                    <td>@item.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+<button class="btn btn-primary" @onclick="Save">Сохранить</button>
+<label>@message</label>
+
+@code {
+    private List<MainModel> data = new List<MainModel>();
+    private MainModel currentModel = new MainModel();
+    private string message = "";
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    private async Task Save()
+    {
+        string query = $"mainmodel";
+        string json = JsonConvert.SerializeObject(data);
+        var stringContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var response = await Http.PostAsync(query, stringContent);
+        if (response.IsSuccessStatusCode)
+        {
+            data = new List<MainModel>();
+            await ShowMessage("Сохранено!");
+        }
+        else
+            await ShowMessage("Возникли ошибки во время сохранения.");
+    }
+
+    private void Add()
+    {        
+        data.Add(currentModel);
+        currentModel = new MainModel();
+    }
+
+    private async Task ShowMessage(string value)
+    {
+        message = value;
+        Task.Delay(5000);
+        message = "";
+    }
+}

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ModelsLib
 {
     public class MainModel : InterfacesLib.IMainModel
     {
+        [Required]
         public int Code { get; set; }
+        [Required]
         public string Value { get; set; }
     }
 }

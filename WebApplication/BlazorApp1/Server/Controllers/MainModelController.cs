@@ -36,5 +36,16 @@ namespace BlazorApp1.Server.Controllers
             }
             return Enumerable.Empty<DatabaseMainModel>();
         }
+
+        [HttpPost]
+        public void Post(IEnumerable<MainModel> data)
+        {
+            var client = new RestClient("https://localhost:7118/mainmodel");
+            var request = new RestRequest("", Method.Post);
+            request.AddBody(data);
+            var response = client.PostAsync(request).Result;
+            if (!response.IsSuccessful)
+                throw new Exception(response.Content);
+        }
     }
 }

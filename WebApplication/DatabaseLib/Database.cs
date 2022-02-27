@@ -17,7 +17,7 @@ namespace DatabaseLib
             {
                 try
                 {
-                    connection.OpenAsync();
+                    connection.Open();
                 }
                 catch (Exception ex)
                 {

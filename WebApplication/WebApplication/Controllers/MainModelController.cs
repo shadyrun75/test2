@@ -14,7 +14,7 @@ namespace WebApp.Controllers
         {
             int totalcount = 0;
             var result = DBWorker.Database.Select(ref totalcount, offset, count, code, value);
-            //Response.Headers.Add("totalitem", new Microsoft.Extensions.Primitives.StringValues($"{totalcount}"));
+            Response.Headers.Add("totalitems", new Microsoft.Extensions.Primitives.StringValues($"{totalcount}"));
             return result;
         }
 

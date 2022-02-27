@@ -32,5 +32,31 @@ namespace ModelsLib
                 return (int)Math.Ceiling((decimal)TotalItems / ItemsPerPage);
             }
         }
+
+        public string Description => $"Страница {CurrentPage} из {TotalPages}. Всего {TotalItems} элементов.";
+
+        public void Next()
+        {
+            if (CurrentPage < TotalPages)
+                CurrentPage++;
+            else
+                CurrentPage = TotalPages;
+        }
+
+        public void Back()
+        {
+            if (CurrentPage > 1)
+                CurrentPage--;
+        }
+
+        public void ToStart()
+        {
+            CurrentPage = 1;
+        }
+
+        public void ToEnd()
+        {
+            CurrentPage = TotalPages;
+        }
     }
 }

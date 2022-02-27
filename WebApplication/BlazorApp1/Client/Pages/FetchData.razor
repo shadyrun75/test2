@@ -13,6 +13,12 @@
 }
 else
 {
+    <h3>@paging.Description</h3>
+    <button class="btn btn-primary" @onclick="GetData">Обновить</button>
+    <EditForm Model="@filter" OnValidSubmit="@HandleValidSubmit">
+        <InputNumber id="filtercode" @bind-Value="filter.Code" placeholder="Code"/>
+        <InputText id="filtervalue" @bind-Value="filter.Value" placeholder="Value"/>
+    </EditForm>
     <table class="table">
         <thead>
             <tr>
@@ -33,14 +39,84 @@ else
         </tbody>
     </table>
 
-    
+    <div>
+        <button class="btn btn-primary" @onclick="ToStart">В начало</button>
+        <button class="btn btn-primary" @onclick="Next">Вперед</button>
+        <button class="btn btn-primary" @onclick="Back">Назад</button>
+        <button class="btn btn-primary" @onclick="ToEnd">В конец</button>
+    </div>
 }
 
 @code {
+
+    class Filter
+    {
+        public int? Code { get; set; }
+        public string? Value { get; set; }
+    }
+
     private IEnumerable<DatabaseMainModel>? mainModels;
+
+    private PagingInfo paging = new PagingInfo()
+        {
+            CurrentPage = 1,
+            ItemsPerPage = 2,
+            TotalItems = 0
+        };
+
+    private Filter filter = new Filter();
 
     protected override async Task OnInitializedAsync()
     {
-        mainModels = await Http.GetFromJsonAsync<DatabaseMainModel[]>("mainmodel");
+        await GetData();
     }
+
+    private async Task GetData()
+    {
+        string query = $"mainmodel?offset={paging.CurrentPage-1}&count={paging.ItemsPerPage}";
+        if (filter.Code != null)
+            query += $"&code={filter.Code}";
+        if (filter.Value?.Length > 0)
+            query += $"&value={filter.Value}";
+        var response = await Http.GetAsync(query);
+        if (response.IsSuccessStatusCode)
+        {
+            mainModels = await response.Content.ReadFromJsonAsync<DatabaseMainModel[]>();
+            var temp = response.Headers.GetValues("totalitems").FirstOrDefault();
+            int.TryParse(temp, out int totalitems);
+            paging.TotalItems = totalitems;
+        }
+        else
+            throw new Exception("Error fetch data. HttpClient not is success.");
+    }
+
+    private async Task ToStart()
+    {
+        paging.ToStart();
+        await GetData();
+    }
+
+    private async Task Next()
+    {
+        paging.Next();
+        await GetData();
+    }
+
+    private async Task Back()
+    {
+        paging.Back();
+        await GetData();
+    }
+
+    private async Task ToEnd()
+    {
+        paging.ToEnd();
+        await GetData();
+    }
+
+    private void HandleValidSubmit()
+    {
+        
+    }
+
 }
